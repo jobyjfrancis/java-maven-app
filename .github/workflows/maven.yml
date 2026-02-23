@@ -42,23 +42,16 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        tags: ${{ steps.set_version.outputs.IMAGE_TAG }}
-
-    - name: Scan Docker image with Docker Scout
-      uses: docker/scout-action@v1
-      with:
-        command: cves
-        image: ${{ steps.set_version.outputs.IMAGE_TAG }}
-
-    - name: Push Docker image
+    - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
         tags: ${{ steps.set_version.outputs.IMAGE_TAG }}
+
+    - name: Scan Docker image with Docker Scout
+      uses: docker/scout-action@v1
+      with:
+          command: cves
+          image: ${{ steps.set_version.outputs.IMAGE_TAG }}
 
