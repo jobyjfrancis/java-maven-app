@@ -27,9 +27,8 @@ jobs:
       id: set_version
       run: |
         VERSION=$(grep -m1 '<version>.*</version>' pom.xml | sed -E 's/.*<version>(.+)<\/version>.*/\1/')
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
         IMAGE_TAG="jobyjfrancis/my-java-app-$VERSION-$GITHUB_RUN_NUMBER"
-        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
     - name: Build with Maven
       run: mvn clean package
@@ -43,10 +42,23 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: ${{ steps.set_version.outputs.IMAGE_TAG }}
+
+    - name: Scan Docker image with Docker Scout
+      uses: docker/scout-action@v1
+      with:
+        command: cves
+        image: ${{ steps.set_version.outputs.IMAGE_TAG }}
+
+    - name: Push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
-        tags: ${{ env.IMAGE_TAG }}
+        tags: ${{ steps.set_version.outputs.IMAGE_TAG }}
 
