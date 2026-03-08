@@ -121,7 +121,12 @@ jobs:
           EOF
 
       - name: Install envsubst
-        run: sudo apt-get install -y gettext-base      
+        run: sudo apt-get install -y gettext-base
+        
+      - name: Debug IMAGE_NAME
+        run: echo \"IMAGE_NAME is $IMAGE_NAME\"
+        env:
+          IMAGE_NAME: ${{ needs.CI.outputs.IMAGE_NAME }}
 
       - name: Deploy to EKS
         env:
