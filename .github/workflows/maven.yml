@@ -7,9 +7,10 @@
 # documentation.
 
 name: Java CI/CD with Maven
-on:
-  push:
-    branches: [ "github-actions" ]
+on: workflow_dispatch
+
+  # push:
+  #   branches: [ "github-actions" ]
 jobs:
   CI:
     runs-on: ubuntu-latest
@@ -30,7 +31,7 @@ jobs:
       run: |
         VERSION=$(grep -m1 '<version>.*</version>' pom.xml | sed -E 's/.*<version>(.+)<\/version>.*/\1/')
         IMAGE_TAG="jobyjfrancis/my-java-app-$VERSION-$GITHUB_RUN_NUMBER"
-        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
     - name: Build with Maven
       run: mvn clean package
@@ -61,78 +62,80 @@ jobs:
     runs-on: ubuntu-latest
     needs: CI
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ap-southeast-2
           
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
+      # - name: Install kubectl
+      #   run: |
+      #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      #     chmod +x kubectl
+      #     sudo mv kubectl /usr/local/bin/
 
-      - name: Install aws-iam-authenticator
-        run: |
-          curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/latest/download/aws-iam-authenticator_$(uname -s)_amd64
-          chmod +x aws-iam-authenticator
-          sudo mv aws-iam-authenticator /usr/local/bin/
+      # - name: Install aws-iam-authenticator
+      #   run: |
+      #     curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/latest/download/aws-iam-authenticator_$(uname -s)_amd64
+      #     chmod +x aws-iam-authenticator
+      #     sudo mv aws-iam-authenticator /usr/local/bin/
 
-      - name: Update kubeconfig for EKS
-        env:
-          K8S_CA_DATA: ${{ secrets.K8S_CA_DATA }}
-          K8S_SERVER: ${{ secrets.K8S_SERVER }}
-          K8S_CLUSTER_NAME: ${{ secrets.K8S_CLUSTER_ARN }}
-        run: |
-          mkdir -p ~/.kube
-          cat > ~/.kube/config <<EOF
-          apiVersion: v1
-          kind: Config
-          clusters:
-          - cluster:
-              certificate-authority-data: "$K8S_CA_DATA"
-              server: "$K8S_SERVER"
-            name: "$K8S_CLUSTER_NAME"
+      # - name: Update kubeconfig for EKS
+      #   env:
+      #     K8S_CA_DATA: ${{ secrets.K8S_CA_DATA }}
+      #     K8S_SERVER: ${{ secrets.K8S_SERVER }}
+      #     K8S_CLUSTER_NAME: ${{ secrets.K8S_CLUSTER_ARN }}
+      #   run: |
+      #     mkdir -p ~/.kube
+      #     cat > ~/.kube/config <<EOF
+      #     apiVersion: v1
+      #     kind: Config
+      #     clusters:
+      #     - cluster:
+      #         certificate-authority-data: "$K8S_CA_DATA"
+      #         server: "$K8S_SERVER"
+      #       name: "$K8S_CLUSTER_NAME"
 
-          contexts:
-          - context:
-              cluster: "$K8S_CLUSTER_NAME"
-              user: "$K8S_CLUSTER_NAME"
-            name: "$K8S_CLUSTER_NAME"
+      #     contexts:
+      #     - context:
+      #         cluster: "$K8S_CLUSTER_NAME"
+      #         user: "$K8S_CLUSTER_NAME"
+      #       name: "$K8S_CLUSTER_NAME"
 
-          current-context: "$K8S_CLUSTER_NAME"
+      #     current-context: "$K8S_CLUSTER_NAME"
 
-          users:
-          - name: "$K8S_CLUSTER_NAME"
-            user:
-              exec:
-                apiVersion: client.authentication.k8s.io/v1beta1
-                command: aws
-                args:
-                  - eks
-                  - get-token
-                  - --cluster-name
-                  - "$K8S_CLUSTER_NAME"
-          EOF
+      #     users:
+      #     - name: "$K8S_CLUSTER_NAME"
+      #       user:
+      #         exec:
+      #           apiVersion: client.authentication.k8s.io/v1beta1
+      #           command: aws
+      #           args:
+      #             - eks
+      #             - get-token
+      #             - --cluster-name
+      #             - "$K8S_CLUSTER_NAME"
+      #     EOF
 
-      - name: Install envsubst
-        run: sudo apt-get install -y gettext-base
+      # - name: Install envsubst
+      #   run: sudo apt-get install -y gettext-base
         
       - name: Debug IMAGE_NAME
-        run: echo \"IMAGE_NAME is $IMAGE_NAME\"
         env:
           IMAGE_NAME: ${{ needs.CI.outputs.IMAGE_NAME }}
+        run: echo "IMAGE_NAME is $IMAGE_NAME"
+        
 
-      - name: Deploy to EKS
-        env:
-          APP_NAME: 'java-maven-app'
-          IMAGE_NAME: ${{ needs.CI.outputs.IMAGE_NAME }}
-        run: |
-          envsubst < kubernetes/deployment.yaml | kubectl apply -f -
-          envsubst < kubernetes/service.yaml | kubectl apply -f -
-          kubectl rollout status deployment/$APP_NAME --namespace=default
+      # - name: Deploy to EKS
+      #   env:
+      #     APP_NAME: 'java-maven-app'
+      #     IMAGE_NAME: ${{ needs.CI.outputs.IMAGE_NAME }}
+      #     IMAGE_NAME:'jobyjfrancis/my-java-app-1.0.0-8'
+      #   run: |
+      #     envsubst < kubernetes/deployment.yaml | kubectl apply -f -
+      #     envsubst < kubernetes/service.yaml | kubectl apply -f -
+      #     kubectl rollout status deployment/$APP_NAME --namespace=default
