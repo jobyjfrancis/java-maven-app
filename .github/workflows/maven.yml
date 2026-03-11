@@ -7,10 +7,9 @@
 # documentation.
 
 name: Java CI/CD with Maven
-on: workflow_dispatch
-
-  # push:
-  #   branches: [ "github-actions" ]
+on: 
+  push:
+    branches: [ "github-actions" ]
 jobs:
   CI:
     runs-on: ubuntu-latest
