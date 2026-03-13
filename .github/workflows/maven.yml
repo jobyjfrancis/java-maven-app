@@ -22,6 +22,7 @@ jobs:
         run: |
           VERSION=$(grep -m1 '<version>.*</version>' pom.xml | sed -E 's/.*<version>(.+)<\/version>.*/\1/')
           IMAGE_TAG="jobyjfrancis/my-java-app-$VERSION-$GITHUB_RUN_NUMBER"
+          echo "$IMAGE_TAG" > image_tag.txt
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Build with Maven
@@ -52,7 +53,8 @@ jobs:
       - name: Export output
         id: export
         run: |
-          echo "IMAGE_NAME=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          IMAGE_NAME=$(cat image_tag.txt)
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_OUTPUT
       
   CD:
     runs-on: ubuntu-latest
