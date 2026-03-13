@@ -43,11 +43,11 @@ jobs:
           push: true
           tags: ${{ steps.set_version.outputs.IMAGE_TAG }}
 
-      - name: Scan Docker image with Docker Scout
-        uses: docker/scout-action@v1
-        with:
-            command: cves
-            image: ${{ steps.set_version.outputs.IMAGE_TAG }}
+      # - name: Scan Docker image with Docker Scout
+      #   uses: docker/scout-action@v1
+      #   with:
+      #       command: cves
+      #       image: ${{ steps.set_version.outputs.IMAGE_TAG }}
 
   CD:
     runs-on: ubuntu-latest
