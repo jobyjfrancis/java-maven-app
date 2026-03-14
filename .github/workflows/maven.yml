@@ -104,12 +104,11 @@ jobs:
             user:
               exec:
                 apiVersion: client.authentication.k8s.io/v1beta1
-                command: aws
+                command: /usr/local/bin/aws-iam-authenticator
                 args:
-                  - eks
-                  - get-token
-                  - --cluster-name
-                  - "$K8S_CLUSTER_NAME"
+                  - "token"
+                  - "-i"
+                  - "myapp-eks-cluster"
           EOF
 
       - name: Install envsubst
