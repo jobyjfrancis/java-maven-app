@@ -3,51 +3,51 @@ on:
   push:
     branches: [ "github-actions" ]
 jobs:
-  CI:
-    runs-on: ubuntu-latest
-    outputs:
-      IMAGE_NAME: ${{ steps.set_version.outputs.IMAGE_NAME }}
-    steps:
-      - uses: actions/checkout@v4
+  # CI:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     IMAGE_NAME: ${{ steps.set_version.outputs.IMAGE_NAME }}
+  #   steps:
+  #     - uses: actions/checkout@v4
       
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
+  #     - name: Set up JDK 17
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #         cache: maven
       
-      - name: Set image version
-        id: set_version
-        run: |
-          VERSION=$(grep -m1 '<version>.*</version>' pom.xml | sed -E 's/.*<version>(.+)<\/version>.*/\1/')
-          IMAGE_TAG="my-java-app-$VERSION-$GITHUB_RUN_NUMBER"
-          echo "IMAGE_NAME=$IMAGE_TAG" >> $GITHUB_OUTPUT
+  #     - name: Set image version
+  #       id: set_version
+  #       run: |
+  #         VERSION=$(grep -m1 '<version>.*</version>' pom.xml | sed -E 's/.*<version>(.+)<\/version>.*/\1/')
+  #         IMAGE_TAG="my-java-app-$VERSION-$GITHUB_RUN_NUMBER"
+  #         echo "IMAGE_NAME=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Build with Maven
-        run: mvn clean package
+  #     - name: Build with Maven
+  #       run: mvn clean package
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+  #     - name: Log in to Docker Hub
+  #       uses: docker/login-action@v3
+  #       with:
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ steps.set_version.outputs.IMAGE_NAME }}
+  #     - name: Build and push Docker image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         push: true
+  #         tags: ${{ secrets.DOCKER_USERNAME }}/${{ steps.set_version.outputs.IMAGE_NAME }}
 
-      - name: Scan Docker image with Docker Scout
-        uses: docker/scout-action@v1
-        with:
-            command: cves
-            image: ${{ secrets.DOCKER_USERNAME }}/${{ steps.set_version.outputs.IMAGE_NAME }}
+  #     - name: Scan Docker image with Docker Scout
+  #       uses: docker/scout-action@v1
+  #       with:
+  #           command: cves
+  #           image: ${{ secrets.DOCKER_USERNAME }}/${{ steps.set_version.outputs.IMAGE_NAME }}
       
   CD:
     runs-on: ubuntu-latest
@@ -114,12 +114,15 @@ jobs:
 
       - name: Install envsubst
         run: sudo apt-get install -y gettext-base
+
+      - name: List k8s nodes
+        run: kubectl get nodes
  
-      - name: Deploy to EKS
-        env:
-          APP_NAME: 'java-maven-app'
-          IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}//${{ needs.CI.outputs.IMAGE_NAME }}
-        run: |
-          envsubst < kubernetes/deployment.yaml | kubectl apply -f -
-          envsubst < kubernetes/service.yaml | kubectl apply -f -
-          kubectl rollout status deployment/$APP_NAME --namespace=default
+      # - name: Deploy to EKS
+      #   env:
+      #     APP_NAME: 'java-maven-app'
+      #     IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}//${{ needs.CI.outputs.IMAGE_NAME }}
+      #   run: |
+      #     envsubst < kubernetes/deployment.yaml | kubectl apply -f -
+      #     envsubst < kubernetes/service.yaml | kubectl apply -f -
+      #     kubectl rollout status deployment/$APP_NAME --namespace=default
