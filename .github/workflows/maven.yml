@@ -111,14 +111,14 @@ jobs:
                   - "myapp-eks-cluster"
           EOF
 
-      - name: Verify kubeconfig
-        run: cat ~/.kube/config
+      # - name: Verify kubeconfig
+      #   run: cat ~/.kube/config
 
       # - name: Install envsubst
       #   run: sudo apt-get install -y gettext-base
 
-      # - name: List k8s nodes
-      #   run: kubectl get nodes
+      - name: List k8s nodes
+        run: kubectl get nodes
  
       # - name: Deploy to EKS
       #   env:
