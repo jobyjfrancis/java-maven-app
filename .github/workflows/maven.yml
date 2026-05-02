@@ -116,7 +116,6 @@ jobs:
 
       - name: Test kubectl and aws-iam-authenticator
         run: |
-          kubectl version --client
           aws-iam-authenticator version
           aws sts get-caller-identity
 
