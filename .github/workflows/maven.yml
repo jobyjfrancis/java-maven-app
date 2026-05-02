@@ -1,7 +1,8 @@
 name: Java CI/CD with Maven
-on: 
-  push:
-    branches: [ "github-actions" ]
+on:
+  workflow_dispatch: 
+  # push:
+  #   branches: [ "github-actions" ]
 jobs:
   # CI:
   #   runs-on: ubuntu-latest
@@ -111,11 +112,14 @@ jobs:
                   - "myapp-eks-cluster"
           EOF
 
-      - name: Install envsubst
-        run: sudo apt-get install -y gettext-base
+      - name: Verify kubeconfig
+        run: cat ~/.kube/config
 
-      - name: List k8s nodes
-        run: kubectl get nodes
+      # - name: Install envsubst
+      #   run: sudo apt-get install -y gettext-base
+
+      # - name: List k8s nodes
+      #   run: kubectl get nodes
  
       # - name: Deploy to EKS
       #   env:
