@@ -1,6 +1,8 @@
 name: Java Maven App CI/CD to EKS
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - github-actions
     
 jobs:
   # CI:
