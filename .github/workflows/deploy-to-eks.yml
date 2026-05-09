@@ -82,20 +82,23 @@ jobs:
         run: |
           which kubectl || echo "kubectl not found"
           kubectl --help
-          which aws-iam-authenticator || echo "aws-iam-authenticator not found"
-          aws-iam-authenticator help
-
+          
       # - name: Install kubectl
       #   run: |
       #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       #     chmod +x kubectl
       #     sudo mv kubectl /usr/local/bin/
 
-      # - name: Install aws-iam-authenticator
-      #   run: |
-      #     curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/latest/download/aws-iam-authenticator_$(uname -s)_amd64
-      #     chmod +x aws-iam-authenticator
-      #     sudo mv aws-iam-authenticator /usr/local/bin/
+      - name: Install aws-iam-authenticator
+        run: |
+          curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/latest/download/aws-iam-authenticator_$(uname -s)_amd64
+          chmod +x aws-iam-authenticator
+          sudo mv aws-iam-authenticator /usr/bin/
+      
+      - name: Check if aws-iam-authenticator is installed
+        run: |
+          which aws-iam-authenticator || echo "aws-iam-authenticator not found"
+          aws-iam-authenticator help
 
       # - name: Update kubeconfig for EKS
       #   env:
