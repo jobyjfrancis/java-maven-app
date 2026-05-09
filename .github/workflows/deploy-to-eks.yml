@@ -50,6 +50,7 @@ jobs:
   #           image: ${{ secrets.DOCKER_USERNAME }}/${{ steps.set_version.outputs.IMAGE_NAME }}
       
   CD:
+    name: Deploy to EKS
     runs-on: ubuntu-latest
     #needs: CI
     steps:
