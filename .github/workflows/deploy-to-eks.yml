@@ -66,23 +66,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
 
-      - name: Verify AWS credentials
-        run: aws sts get-caller-identity
+      # - name: Verify AWS credentials
+      #   run: aws sts get-caller-identity
 
-      - name: Check AWS confiuguration
-        run: aws configure list
+      # - name: Check AWS confiuguration
+      #   run: aws configure list
 
-      - name: Check current working directory
-        run: pwd
+      # - name: Check current working directory
+      #   run: pwd
 
-      - name: List files in current directory
-        run: ls -la
+      # - name: List files in current directory
+      #   run: ls -la
 
-      
+      - name: Check if kubectl and aws-iam-authenticator are already installed
+        run: |
+          which kubectl || echo "kubectl not found"
+          kubectl --help
+          which aws-iam-authenticator || echo "aws-iam-authenticator not found"
+          aws-iam-authenticator help
 
-      
-        
-          
       # - name: Install kubectl
       #   run: |
       #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
