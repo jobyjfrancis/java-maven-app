@@ -1,4 +1,4 @@
-name: Java CI/CD with Maven
+name: Java Maven App CI/CD to EKS
 on:
   workflow_dispatch:
     
