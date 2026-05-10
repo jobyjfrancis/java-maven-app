@@ -6,6 +6,7 @@ on:
     
 jobs:
   CI:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
     outputs:
       IMAGE_NAME: ${{ steps.set_version.outputs.IMAGE_NAME }}
@@ -43,13 +44,13 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/devops-bootcamp/${{ steps.set_version.outputs.IMAGE_NAME }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/devops-bootcamp:${{ steps.set_version.outputs.IMAGE_NAME }}
 
       - name: Scan Docker image with Docker Scout
         uses: docker/scout-action@v1
         with:
             command: cves
-            image: ${{ secrets.DOCKER_USERNAME }}/devops-bootcamp/${{ steps.set_version.outputs.IMAGE_NAME }}
+            image: ${{ secrets.DOCKER_USERNAME }}/devops-bootcamp:${{ steps.set_version.outputs.IMAGE_NAME }}
       
   CD:
     name: Deploy to EKS
@@ -81,7 +82,7 @@ jobs:
       - name: Deploy to EKS
         env:
           APP_NAME: 'java-maven-app'
-          IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/devops-bootcamp/${{ needs.CI.outputs.IMAGE_NAME }}
+          APP_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/devops-bootcamp:${{ needs.CI.outputs.IMAGE_NAME }}
         run: |
           envsubst < kubernetes/deployment.yaml | kubectl apply -f -
           envsubst < kubernetes/service.yaml | kubectl apply -f -

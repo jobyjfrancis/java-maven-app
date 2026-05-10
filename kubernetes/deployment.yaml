@@ -18,7 +18,7 @@ spec:
         - name: my-docker-registry-key
       containers:
         - name: $APP_NAME
-          image: $IMAGE_NAME
+          image: $APP_IMAGE_NAME
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
