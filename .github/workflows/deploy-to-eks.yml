@@ -79,6 +79,14 @@ jobs:
       - name: Install envsubst
         run: sudo apt-get install -y gettext-base
 
+      - name: Add Docker registry secret to Kubernetes
+        run: |
+          kubectl create secret docker-registry my-docker-registry-key \
+            --docker-server=https://index.docker.io/v1/ \
+            --docker-username=${{ secrets.DOCKER_USERNAME }} \
+            --docker-password=${{ secrets.DOCKER_PASSWORD }} \
+            --namespace=default
+            
       - name: Deploy to EKS
         env:
           APP_NAME: 'java-maven-app'
