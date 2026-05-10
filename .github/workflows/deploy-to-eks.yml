@@ -113,14 +113,16 @@ jobs:
                  provideClusterInfo: false
           EOF
 
-      - name: Verify kubeconfig
-        run: cat ~/.kube/config
+      # - name: Verify kubeconfig
+      #   run: cat ~/.kube/config
+
+      - name: List k8s nodes
+        run: kubectl get nodes
 
       # - name: Install envsubst
       #   run: sudo apt-get install -y gettext-base
 
-      # - name: List k8s nodes
-      #   run: kubectl get nodes
+      
  
       # - name: Deploy to EKS
       #   env:
