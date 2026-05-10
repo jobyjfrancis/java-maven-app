@@ -66,59 +66,55 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
 
-      # - name: Verify AWS credentials
-      #   run: aws sts get-caller-identity
-
-      # - name: Check AWS confiuguration
-      #   run: aws configure list
-
-      # - name: Check current working directory
-      #   run: pwd
-
-      # - name: List files in current directory
-      #   run: ls -la
-
       - name: Install aws-iam-authenticator
         run: |
           curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.7.15/aws-iam-authenticator_0.7.15_linux_amd64
           chmod +x aws-iam-authenticator
           mv aws-iam-authenticator /usr/local/bin/
-          aws-iam-authenticator help
           
-      # - name: Update kubeconfig for EKS
-      #   env:
-      #     K8S_CA_DATA: ${{ secrets.K8S_CA_DATA }}
-      #     K8S_SERVER: ${{ secrets.K8S_SERVER }}
-      #     K8S_CLUSTER_NAME: ${{ secrets.K8S_CLUSTER_ARN }}
-      #   run: |
-      #     mkdir -p ~/.kube
-      #     cat > ~/.kube/config <<EOF
-      #     apiVersion: v1
-      #     kind: Config
-      #     clusters:
-      #     - cluster:
-      #         certificate-authority-data: "$K8S_CA_DATA"
-      #         server: "$K8S_SERVER"
-      #       name: "$K8S_CLUSTER_NAME"
-      #     contexts:
-      #     - context:
-      #         cluster: "$K8S_CLUSTER_NAME"
-      #         user: "$K8S_CLUSTER_NAME"
-      #       name: "$K8S_CLUSTER_NAME"
-      #     current-context: "$K8S_CLUSTER_NAME"
-      #     users:
-      #     - name: "$K8S_CLUSTER_NAME"
-      #       user:
-      #         exec:
-      #           apiVersion: client.authentication.k8s.io/v1beta1
-      #           command: /usr/local/bin/aws-iam-authenticator
-      #           args:
-      #             - "token"
-      #             - "-i"
-      #             - "myapp-eks-cluster"
-      #     EOF
-      # - name: Verify kubeconfig
-      #   run: cat ~/.kube/config
+      - name: Update kubeconfig for EKS
+        env:
+          K8S_CA_DATA: ${{ secrets.K8S_CA_DATA }}
+          K8S_SERVER: ${{ secrets.K8S_SERVER }}
+          K8S_CLUSTER_NAME: ${{ secrets.K8S_CLUSTER_NAME }}
+          AWS_ACCOUNT_NAME: ${{ secrets.AWS_ACCOUNT_NAME }}
+        run: |
+          mkdir -p ~/.kube
+          cat > ~/.kube/config <<EOF
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - cluster:
+              certificate-authority-data: "$K8S_CA_DATA"
+              server: "$K8S_SERVER"
+            name: "$K8S_CLUSTER_NAME"
+          contexts:
+          - context:
+              cluster: "$K8S_CLUSTER_NAME"
+              user: "$AWS_ACCOUNT_NAME@$K8S_CLUSTER_NAME"
+            name: "$AWS_ACCOUNT_NAME@$K8S_CLUSTER_NAME"
+          current-context: "$AWS_ACCOUNT_NAME@$K8S_CLUSTER_NAME"
+          users:
+          - name: "$AWS_ACCOUNT_NAME@$K8S_CLUSTER_NAME"
+            user:
+              exec:
+                apiVersion: client.authentication.k8s.io/v1beta1
+                command: /usr/local/bin/aws-iam-authenticator
+                args:
+                - "token"
+                - "-i"
+                - "demo-eks"
+                command: aws-iam-authenticator
+                 env:
+                 - name: AWS_STS_REGIONAL_ENDPOINTS
+                   value: regional
+                 - name: AWS_DEFAULT_REGION
+                   value: ap-southeast-2
+                 provideClusterInfo: false
+          EOF
+
+      - name: Verify kubeconfig
+        run: cat ~/.kube/config
 
       # - name: Install envsubst
       #   run: sudo apt-get install -y gettext-base
